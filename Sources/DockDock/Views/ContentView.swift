@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var isEditingTriggerBand = false
     @State private var isApplyingDockPreferences = false
     @State private var dockPreferencesMessage: DockPreferencesMessage?
+    @State private var dockPreferencesStatus = DockPreferencesService.currentStatus()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -78,6 +79,9 @@ struct ContentView: View {
         }
         .onChange(of: settings.dockEdge) {
             overlay.show(settings: settings)
+        }
+        .task {
+            refreshDockPreferencesStatus()
         }
     }
 
@@ -152,12 +156,29 @@ struct ContentView: View {
 
     private var recommendedDockSettingsPanel: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Recommended Dock Settings")
+            HStack {
+                Label(
+                    dockPreferencesStatus.usesRecommendedSettings ? "Dock Settings Ready" : "Dock Settings Need Attention",
+                    systemImage: dockPreferencesStatus.usesRecommendedSettings ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+                )
                 .font(.headline)
+                .foregroundStyle(dockPreferencesStatus.usesRecommendedSettings ? .green : .orange)
+
+                Spacer()
+
+                Button("Recheck") {
+                    refreshDockPreferencesStatus()
+                }
+                .controlSize(.small)
+            }
 
             Text("For the fastest response, enable Dock auto-hide and remove the Dock's built-in reveal delay and animation time.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
+
+            Text(dockPreferencesStatus.summary)
+                .font(.caption)
+                .foregroundStyle(dockPreferencesStatus.usesRecommendedSettings ? Color.secondary : Color.orange)
 
             HStack(spacing: 10) {
                 Button {
@@ -205,6 +226,7 @@ struct ContentView: View {
                 try DockPreferencesService.applyRecommendedAutohideSettings()
                 await MainActor.run {
                     dockPreferencesMessage = DockPreferencesMessage(text: "Applied. The Dock has been restarted.", isError: false)
+                    refreshDockPreferencesStatus()
                     isApplyingDockPreferences = false
                 }
             } catch {
@@ -217,6 +239,10 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    private func refreshDockPreferencesStatus() {
+        dockPreferencesStatus = DockPreferencesService.currentStatus()
     }
 }
 
