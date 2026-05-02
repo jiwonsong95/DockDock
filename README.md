@@ -32,6 +32,7 @@ What works now:
 - Adjust the trigger band from 1 to 50 px, with 15 px as the recommended value
   and 5-25 px highlighted as the normal range.
 - Show a translucent blue overlay while adjusting the trigger band.
+- Apply the recommended macOS Dock auto-hide timing settings from the app.
 - Open settings from the menu bar when needed.
 - Create a stable local code-signing identity for development builds, so
   Accessibility permission survives rebuilds.
@@ -49,6 +50,17 @@ Instead it uses:
 
 DockDock only snaps on entry into the configured trigger band. It should not keep
 the pointer stuck to the edge.
+
+For the fastest response, DockDock expects the Dock itself to be auto-hidden
+without a built-in reveal delay. You can apply the recommended Dock settings from
+DockDock's Settings window, or run:
+
+```bash
+defaults write com.apple.dock autohide -bool true
+defaults write com.apple.dock autohide-delay -float 0
+defaults write com.apple.dock autohide-time-modifier -float 0
+killall Dock
+```
 
 ## Requirements
 

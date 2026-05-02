@@ -7,6 +7,8 @@ struct ContentView: View {
     @ObservedObject var overlay: TriggerBandOverlayService
     @ObservedObject var launchAtLogin: LaunchAtLoginService
     @State private var isEditingTriggerBand = false
+    @State private var isApplyingDockPreferences = false
+    @State private var dockPreferencesMessage: DockPreferencesMessage?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -55,6 +57,8 @@ struct ContentView: View {
                 .pickerStyle(.segmented)
             }
 
+            recommendedDockSettingsPanel
+
             ExclusionEditor(settings: settings)
 
             Divider()
@@ -64,8 +68,8 @@ struct ContentView: View {
             Spacer()
         }
         .padding(28)
-        .frame(width: 720, height: 640)
-        .frame(minWidth: 680, minHeight: 600)
+        .frame(width: 760, height: 740)
+        .frame(minWidth: 720, minHeight: 700)
         .onChange(of: settings.isEnabled) { service.restart() }
         .onChange(of: settings.activationBand) {
             if isEditingTriggerBand {
@@ -146,6 +150,43 @@ struct ContentView: View {
         }
     }
 
+    private var recommendedDockSettingsPanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Recommended Dock Settings")
+                .font(.headline)
+
+            Text("For the fastest response, enable Dock auto-hide and remove the Dock's built-in reveal delay and animation time.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 10) {
+                Button {
+                    applyRecommendedDockSettings()
+                } label: {
+                    if isApplyingDockPreferences {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Text("Apply Recommended Dock Settings")
+                    }
+                }
+                .disabled(isApplyingDockPreferences)
+
+                Text("Restarts the Dock.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if let dockPreferencesMessage {
+                Text(dockPreferencesMessage.text)
+                    .font(.caption)
+                    .foregroundStyle(dockPreferencesMessage.isError ? .red : .green)
+            }
+        }
+        .padding(14)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
     private func handleTriggerBandEditing(_ isEditing: Bool) {
         isEditingTriggerBand = isEditing
         if isEditing {
@@ -154,4 +195,32 @@ struct ContentView: View {
             overlay.show(settings: settings)
         }
     }
+
+    private func applyRecommendedDockSettings() {
+        isApplyingDockPreferences = true
+        dockPreferencesMessage = nil
+
+        Task.detached {
+            do {
+                try DockPreferencesService.applyRecommendedAutohideSettings()
+                await MainActor.run {
+                    dockPreferencesMessage = DockPreferencesMessage(text: "Applied. The Dock has been restarted.", isError: false)
+                    isApplyingDockPreferences = false
+                }
+            } catch {
+                await MainActor.run {
+                    dockPreferencesMessage = DockPreferencesMessage(
+                        text: error.localizedDescription,
+                        isError: true
+                    )
+                    isApplyingDockPreferences = false
+                }
+            }
+        }
+    }
+}
+
+private struct DockPreferencesMessage {
+    var text: String
+    var isError: Bool
 }
