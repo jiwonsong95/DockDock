@@ -15,7 +15,7 @@ screen edge.
 <video src="https://github.com/user-attachments/assets/74ff290f-b053-40c8-ad2d-7dd001ebec32" controls width="720"></video>
 
 If the video does not render in your browser, open the
-[release demo asset](https://github.com/jiwonsong95/DockDock/releases/download/v0.1.0/demo.mp4).
+[release demo asset](https://github.com/CodeOneLabs/DockDock/releases/download/v0.1.0/demo.mp4).
 
 ## Status
 
@@ -217,7 +217,7 @@ After replacing `version` and `sha256` in that template and publishing a
 Homebrew tap, users can install and update with:
 
 ```bash
-brew tap jiwonsong95/dockdock
+brew tap CodeOneLabs/dockdock
 brew install --cask dockdock
 brew upgrade --cask dockdock
 ```
