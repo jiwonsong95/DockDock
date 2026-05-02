@@ -17,6 +17,7 @@ final class DockTriggerService: ObservableObject {
     private weak var settings: AppSettings?
     private var lastSnapTime: CFAbsoluteTime = 0
     private var lastPointerLocation: CGPoint?
+    private var isSnapArmed = true
     private var permissionTimer: Timer?
 
     func bind(settings: AppSettings) {
@@ -82,6 +83,7 @@ final class DockTriggerService: ObservableObject {
         eventTap = nil
         isRunning = false
         lastPointerLocation = nil
+        isSnapArmed = true
     }
 
     func refreshPermission() {
@@ -159,18 +161,35 @@ final class DockTriggerService: ObservableObject {
             activeExclusionDescription = nil
         }
 
-        let now = CFAbsoluteTimeGetCurrent()
-        guard now - lastSnapTime > 0.18 else {
-            lastPointerLocation = point
-            return
-        }
-
         guard let displayBounds = DisplayGeometry.bounds(containing: point) else {
             lastPointerLocation = point
             return
         }
 
         let geometry = TriggerGeometry(activationBand: CGFloat(settings.activationBand))
+        if !isSnapArmed {
+            let dockClearance = DisplayGeometry.dockClearance(containing: point, edge: settings.dockEdge)
+            let rearmDistance = geometry.rearmDistance(dockClearance: dockClearance)
+
+            guard geometry.isBeyondRearmDistance(
+                point,
+                in: displayBounds,
+                edge: settings.dockEdge,
+                rearmDistance: rearmDistance
+            ) else {
+                lastPointerLocation = point
+                return
+            }
+
+            isSnapArmed = true
+        }
+
+        let now = CFAbsoluteTimeGetCurrent()
+        guard now - lastSnapTime > 0.18 else {
+            lastPointerLocation = point
+            return
+        }
+
         guard geometry.shouldSnap(
             from: lastPointerLocation,
             to: point,
@@ -191,6 +210,7 @@ final class DockTriggerService: ObservableObject {
         }
 
         lastSnapTime = now
+        isSnapArmed = false
         CGWarpMouseCursorPosition(snapPoint)
         lastPointerLocation = snapPoint
         lastSnapDescription = "Snapped to \(Int(snapPoint.x)), \(Int(snapPoint.y))"

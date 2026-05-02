@@ -41,6 +41,30 @@ public struct TriggerGeometry: Equatable {
         }
     }
 
+    public func rearmDistance(dockClearance: CGFloat, extraMargin: CGFloat = 16) -> CGFloat {
+        max(activationBand, dockClearance + extraMargin)
+    }
+
+    public func isBeyondRearmDistance(
+        _ point: CGPoint,
+        in displayBounds: CGRect,
+        edge: DockEdge,
+        rearmDistance: CGFloat
+    ) -> Bool {
+        guard rearmDistance > 0, displayBounds.contains(point) else {
+            return false
+        }
+
+        switch edge {
+        case .bottom:
+            return point.y <= displayBounds.maxY - rearmDistance
+        case .left:
+            return point.x >= displayBounds.minX + rearmDistance
+        case .right:
+            return point.x <= displayBounds.maxX - rearmDistance
+        }
+    }
+
     public func snapPoint(for point: CGPoint, in displayBounds: CGRect, edge: DockEdge) -> CGPoint? {
         guard activationBand > 0, displayBounds.contains(point) else {
             return nil
