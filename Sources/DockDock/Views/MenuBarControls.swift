@@ -14,6 +14,7 @@ struct MenuBarControls: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Toggle("Enabled", isOn: $settings.isEnabled)
+            Toggle("Sound", isOn: $settings.isSnapSoundEnabled)
 
             Divider()
 

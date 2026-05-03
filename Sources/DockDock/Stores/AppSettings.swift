@@ -15,6 +15,10 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(dockEdge.rawValue, forKey: Keys.dockEdge) }
     }
 
+    @Published var isSnapSoundEnabled: Bool {
+        didSet { defaults.set(isSnapSoundEnabled, forKey: Keys.isSnapSoundEnabled) }
+    }
+
     @Published var showMenuBarExtra: Bool {
         didSet { defaults.set(showMenuBarExtra, forKey: Keys.showMenuBarExtra) }
     }
@@ -47,6 +51,7 @@ final class AppSettings: ObservableObject {
         }
 
         showMenuBarExtra = defaults.object(forKey: Keys.showMenuBarExtra) as? Bool ?? true
+        isSnapSoundEnabled = defaults.object(forKey: Keys.isSnapSoundEnabled) as? Bool ?? true
         excludedBundleIDs = defaults.stringArray(forKey: Keys.excludedBundleIDs) ?? []
         hasAskedLaunchAtLogin = defaults.object(forKey: Keys.hasAskedLaunchAtLogin) as? Bool ?? false
     }
@@ -69,6 +74,7 @@ final class AppSettings: ObservableObject {
         static let isEnabled = "isEnabled"
         static let activationBand = "activationBand"
         static let dockEdge = "dockEdge"
+        static let isSnapSoundEnabled = "isSnapSoundEnabled"
         static let showMenuBarExtra = "showMenuBarExtra"
         static let excludedBundleIDs = "excludedBundleIDs"
         static let hasAskedLaunchAtLogin = "hasAskedLaunchAtLogin"

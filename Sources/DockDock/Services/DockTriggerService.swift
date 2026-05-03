@@ -214,7 +214,9 @@ final class DockTriggerService: ObservableObject {
         lastSnapTime = now
         isSnapArmed = false
         CGWarpMouseCursorPosition(snapPoint)
-        SnapSoundService.play()
+        if settings.isSnapSoundEnabled {
+            SnapSoundService.play()
+        }
         lastPointerLocation = snapPoint
         lastSnapDescription = "Snapped to \(Int(snapPoint.x)), \(Int(snapPoint.y))"
     }

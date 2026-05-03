@@ -19,6 +19,9 @@ struct ContentView: View {
                 Toggle("Enable expanded Dock trigger zone", isOn: $settings.isEnabled)
                     .toggleStyle(.switch)
 
+                Toggle("Play sound when DockDock snaps", isOn: $settings.isSnapSoundEnabled)
+                    .toggleStyle(.switch)
+
                 Toggle(
                     "Start DockDock when I log in",
                     isOn: Binding(
